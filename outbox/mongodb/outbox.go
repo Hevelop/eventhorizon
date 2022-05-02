@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	bsonCodec "github.com/looplab/eventhorizon/codec/bson"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,6 +16,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+
+	bsonCodec "github.com/looplab/eventhorizon/codec/bson"
 
 	eh "github.com/looplab/eventhorizon"
 )
@@ -348,10 +349,12 @@ func (o *Outbox) processFullOutbox(ctx context.Context) error {
 
 	// Take started but non-finished events after 15 sec,
 	// or non-started events after 10 min.
+	opts := options.Find()
+	opts.SetSort(bson.D{{"version", 1}})
 	cur, err := o.outbox.Find(ctx, bson.M{"$or": bson.A{
 		bson.M{"taken_at": bson.M{"$lt": now.Add(-PeriodicSweepAge)}},
 		bson.M{"taken_at": nil, "created_at": bson.M{"$lt": now.Add(-PeriodicCleanupAge)}},
-	}})
+	}}, opts)
 	if err != nil {
 		return fmt.Errorf("could not find outbox event: %w", err)
 	}
