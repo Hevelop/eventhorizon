@@ -389,7 +389,9 @@ func (s *EventStore) Save(ctx context.Context, events []eh.Event, originalVersio
 
 // Load implements the Load method of the eventhorizon.EventStore interface.
 func (s *EventStore) Load(ctx context.Context, id uuid.UUID) ([]eh.Event, error) {
-	cursor, err := s.events.Find(ctx, bson.M{"aggregate_id": id})
+	opts := mongoOptions.Find()
+	opts.SetSort(bson.M{"version": 1})
+	cursor, err := s.events.Find(ctx, bson.M{"aggregate_id": id}, opts)
 	if err != nil {
 		return nil, &eh.EventStoreError{
 			Err:         fmt.Errorf("could not find event: %w", err),
