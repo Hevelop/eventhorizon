@@ -29,7 +29,7 @@ var (
 	// Settings for how old different kind of unprocessed events needs to be
 	// to be processed by the periodic sweep.
 	PeriodicSweepAge   = 15 * time.Second
-	PeriodicCleanupAge = 10 * time.Minute
+	PeriodicCleanupAge = 1 * time.Minute
 )
 
 // Outbox implements an eventhorizon.Outbox for MongoDB.
